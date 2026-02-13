@@ -251,7 +251,7 @@
                 document.getElementById('catatan-section').classList.add('hidden');
             }
 
-            const verificationUrl = `https://lidan.co.id/sign/invoice.html?token=${data.x_12}`;
+            const verificationUrl = `https://sign.lidan.co.id/invoice.html?token=${data.x_12}`;
 
             new QRCode(document.getElementById("qrcode"), {
                 text: verificationUrl,
