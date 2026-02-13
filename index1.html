@@ -11,12 +11,6 @@
         .loader { border-top-color: #4f46e5; animation: spinner 1s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none; }
-
-        /* Toggle Switch PPN */
-        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; background-color: #4f46e5; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #e0e7ff; }
-        .toggle-checkbox { right: 4px; transition: all 0.3s ease; }
-        .toggle-label { transition: background-color 0.3s ease; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
@@ -41,7 +35,6 @@
         };
     </script>
 
-    <!-- ===== LOGIN SECTION ===== -->
     <div id="login-section" class="flex items-center justify-center h-screen px-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <h2 id="login-header" class="text-2xl font-black text-center text-gray-800 uppercase mb-6 tracking-tight"></h2>
@@ -54,7 +47,6 @@
         </div>
     </div>
 
-    <!-- ===== ADMIN DASHBOARD ===== -->
     <div id="admin-dashboard" class="hidden container mx-auto p-4 md:p-8">
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
@@ -90,7 +82,6 @@
         </div>
     </div>
 
-    <!-- ===== MODAL FORM INVOICE ===== -->
     <div id="modal-form" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col my-8">
             <div class="p-6 border-b flex justify-between items-center bg-gray-50/50">
@@ -101,34 +92,17 @@
                 <input type="hidden" name="id_x" id="edit_id_x">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- Kolom Kiri: Info Pelanggan -->
                     <div class="space-y-4">
                         <label class="text-[10px] font-black uppercase text-indigo-500 tracking-widest">Informasi Pelanggan</label>
-                        <input type="text" name="x_01" id="field_x01" placeholder="Nama Perusahaan/Pelanggan" required 
-                               class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white">
-                        <textarea name="x_02" id="field_x02" placeholder="Alamat Lengkap Pelanggan" required 
-                                  class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white h-24"></textarea>
-                        <input type="text" name="x_03" id="field_x03" placeholder="No. Telepon / Email" 
-                               class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white">
+                        <input type="text" name="x_01" id="field_x01" placeholder="Nama Perusahaan/Pelanggan" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white">
+                        <textarea name="x_02" id="field_x02" placeholder="Alamat Lengkap Pelanggan" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white h-24"></textarea>
+                        <input type="text" name="x_03" id="field_x03" placeholder="No. Telepon / Email" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 focus:bg-white">
                     </div>
-
-                    <!-- Kolom Kanan: Metadata Invoice -->
                     <div class="space-y-4">
                         <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Metadata Invoice</label>
-
-                        <!-- No Invoice: format No100/02/INV/2026 -->
-                        <div class="relative">
-                            <input type="text" name="x_04" id="field_x04" readonly 
-                                   class="w-full p-3 bg-indigo-50 border-none font-black text-indigo-700 rounded-xl pr-10" 
-                                   placeholder="No Invoice">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 text-xs font-bold pointer-events-none">🔒</span>
-                        </div>
-                        <p class="text-[9px] text-gray-400 font-bold -mt-2 ml-1 tracking-wider">Format: No[id+1+100]/[bln]/INV/[tahun]</p>
-
-                        <input type="date" name="x_05" id="field_x05" required 
-                               class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500">
-                        <input type="date" name="x_06" id="field_x06" required 
-                               class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500">
+                        <input type="text" name="x_04" id="field_x04" readonly class="w-full p-3 bg-indigo-50 border-none font-black text-indigo-700 rounded-xl" placeholder="No Invoice">
+                        <input type="date" name="x_05" id="field_x05" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500">
+                        <input type="date" name="x_06" id="field_x06" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500">
                         <select name="x_13" id="field_x13" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 font-bold">
                             <option value="UNPAID">UNPAID - Belum Dibayar</option>
                             <option value="PAID">PAID - Sudah Dibayar</option>
@@ -137,7 +111,6 @@
                     </div>
                 </div>
 
-                <!-- Daftar Item -->
                 <div class="border-t pt-6 mb-6">
                     <div class="flex justify-between items-center mb-4">
                         <label class="text-[10px] font-black uppercase text-indigo-500 tracking-widest">Daftar Item/Layanan</label>
@@ -146,67 +119,27 @@
                     <div id="items-container" class="space-y-3"></div>
                 </div>
 
-                <!-- Ringkasan & Kalkulasi -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <textarea name="x_11" id="field_x11" placeholder="Catatan / Notes (Opsional)" 
-                              class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 h-24"></textarea>
-
+                    <textarea name="x_11" id="field_x11" placeholder="Catatan / Notes (Opsional)" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500 h-24"></textarea>
                     <div class="space-y-3">
                         <div class="bg-indigo-50 p-4 rounded-xl">
-
-                            <!-- Subtotal -->
                             <div class="flex justify-between mb-2">
-                                <span class="text-sm font-bold text-gray-700">Subtotal:</span>
+                                <span class="text-sm font-bold">Subtotal:</span>
                                 <span id="subtotal-display" class="font-black text-indigo-900">Rp 0</span>
                             </div>
-
-                            <!-- Toggle PPN -->
-                            <div class="flex justify-between items-center mb-2 py-2 border-t border-indigo-100">
-                                <div class="flex items-center gap-2">
-                                    <!-- Custom Toggle Switch -->
-                                    <div class="relative inline-block w-10 mr-1 align-middle select-none">
-                                        <input type="checkbox" id="ppn-toggle" name="ppn_include" value="1"
-                                               class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer top-0.5"
-                                               onchange="calculateTotal()">
-                                        <label for="ppn-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 cursor-pointer"></label>
-                                    </div>
-                                    <label for="ppn-toggle" class="text-sm font-bold text-gray-700 cursor-pointer select-none">
-                                        PPN <span id="ppn-rate-label" class="text-indigo-500">(11%)</span>
-                                    </label>
-                                </div>
-                                <span id="ppn-display" class="font-black text-indigo-900 transition-all">Rp 0</span>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm font-bold">PPN (11%):</span>
+                                <span id="ppn-display" class="font-black text-indigo-900">Rp 0</span>
                             </div>
-
-                            <!-- Baris PPN detail (hanya muncul bila aktif) -->
-                            <div id="ppn-info-row" class="hidden text-[10px] text-indigo-400 font-bold text-right -mt-1 mb-2 italic">
-                                Termasuk PPN 11% dari Subtotal
-                            </div>
-
-                            <!-- Total -->
                             <div class="flex justify-between pt-2 border-t-2 border-indigo-200">
                                 <span class="text-lg font-black">TOTAL:</span>
                                 <span id="total-display" class="font-black text-2xl text-indigo-600">Rp 0</span>
                             </div>
                         </div>
-
-                        <!-- Badge Status PPN -->
-                        <div id="ppn-badge" class="hidden flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
-                            <span class="text-amber-500 text-base">🧾</span>
-                            <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">Invoice ini dikenakan PPN 11%</span>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Hidden Fields -->
-                <input type="hidden" name="x_07" id="field_x07">
-                <input type="hidden" name="x_08" id="field_x08">
-                <input type="hidden" name="x_09" id="field_x09">
-                <input type="hidden" name="x_10" id="field_x10">
-                <input type="hidden" name="x_12" id="field_x12">
-                <!-- Menyimpan status PPN (0 atau 1) -->
-                <input type="hidden" name="x_14" id="field_x14" value="0">
-
-                <div class="flex justify-end gap-3 pt-6 border-t">
+                <input type="hidden" name="x_07" id="field_x07"> <input type="hidden" name="x_08" id="field_x08"> <input type="hidden" name="x_09" id="field_x09"> <input type="hidden" name="x_10" id="field_x10"> <input type="hidden" name="x_12" id="field_x12"> <div class="flex justify-end gap-3 pt-6 border-t">
                     <button type="button" onclick="closeModal()" class="px-8 py-3 font-bold text-gray-400 uppercase text-xs">Batal</button>
                     <button type="submit" class="px-12 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all uppercase text-xs tracking-widest">Simpan Invoice</button>
                 </div>
@@ -214,7 +147,6 @@
         </div>
     </div>
 
-    <!-- ===== MODAL QR ===== -->
     <div id="modal-qr" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
         <div class="bg-white p-10 rounded-[2.5rem] text-center max-w-sm w-full shadow-2xl">
             <div id="qr-capture-area" class="bg-white p-6 inline-block border-[10px] border-gray-50 rounded-3xl mb-4">
@@ -226,7 +158,6 @@
         </div>
     </div>
 
-    <!-- ===== MAIN SCRIPT ===== -->
     <script>
         let allData = [];
         let isEditMode = false;
@@ -285,18 +216,11 @@
                 let statusColor = 'bg-yellow-50 text-yellow-600';
                 if(item.x_13 === 'PAID') statusColor = 'bg-green-50 text-green-600';
                 if(item.x_13 === 'OVERDUE') statusColor = 'bg-red-50 text-red-600';
-
-                // Badge PPN jika ada
-                const ppnBadge = (item.x_14 == 1 || item.x_14 === '1')
-                    ? `<span class="inline-block bg-amber-50 text-amber-500 text-[8px] font-black px-2 py-0.5 rounded-md border border-amber-200 ml-1">+PPN</span>`
-                    : '';
                 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/50 transition-colors">
                         <td class="p-6">
-                            <div class="text-[9px] text-indigo-500 font-black tracking-tighter mb-1 uppercase flex items-center gap-1">
-                                ${item.x_04}${ppnBadge}
-                            </div>
+                            <div class="text-[9px] text-indigo-500 font-black tracking-tighter mb-1 uppercase">${item.x_04}</div>
                             <div class="text-[10px] text-gray-400 font-bold">Tgl: ${item.x_05}</div>
                             <div class="text-[10px] text-red-500 font-bold">Due: ${item.x_06}</div>
                         </td>
@@ -321,27 +245,6 @@
             });
         }
 
-        // =====================================================
-        //  GENERATE NO INVOICE
-        //  Format: No[id_maks + 1 + 100] / [bulan] / INV / [tahun]
-        //  Offset +100 agar nomor tidak terlihat dari urutan asli
-        //  Contoh: id tertinggi=5 → 5+1+100=106 → No106/02/INV/2026
-        // =====================================================
-        function generateNoInvoice() {
-            const now   = new Date();
-            const tahun = now.getFullYear();
-            const bulan = String(now.getMonth() + 1).padStart(2, '0');
-
-            // Cari id tertinggi dari data yang ada, default 0 jika belum ada data
-            const maxId  = allData.length > 0 ? Math.max(...allData.map(d => parseInt(d.id_x) || 0)) : 0;
-            const nomor  = maxId + 1 + 100;
-
-            return `${nomor}/${bulan}/INV/${tahun}`;
-        }
-
-        // =====================================================
-        //  OPEN MODAL (BUAT BARU)
-        // =====================================================
         function openModal() {
             isEditMode = false;
             document.getElementById('sign-form').reset();
@@ -357,114 +260,67 @@
             
             document.getElementById('field_x12').value = 'LIDAN-INV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
             document.getElementById('field_x13').value = 'UNPAID';
-
-            // Reset PPN toggle ke OFF
-            setPPNToggle(false);
             
             document.getElementById('items-container').innerHTML = '';
             addItem();
-            calculateTotal();
             document.getElementById('modal-form').classList.remove('hidden');
         }
 
-        // =====================================================
-        //  TAMBAH BARIS ITEM
-        // =====================================================
         function addItem() {
             const container = document.getElementById('items-container');
             const itemDiv = document.createElement('div');
             itemDiv.className = 'grid grid-cols-12 gap-2 items-end';
             itemDiv.innerHTML = `
-                <input type="text"   placeholder="Nama Item" class="col-span-5 p-3 bg-gray-50 border rounded-lg text-sm item-name" required>
-                <input type="number" placeholder="Qty"       class="col-span-2 p-3 bg-gray-50 border rounded-lg text-sm item-qty"  value="1" min="1" required>
-                <input type="number" placeholder="Harga"     class="col-span-4 p-3 bg-gray-50 border rounded-lg text-sm item-price" min="0" required>
-                <button type="button" onclick="this.parentElement.remove(); calculateTotal()" 
-                        class="col-span-1 bg-red-50 text-red-500 p-3 rounded-lg font-bold hover:bg-red-100 transition-colors">×</button>
+                <input type="text" placeholder="Nama Item" class="col-span-5 p-3 bg-gray-50 border rounded-lg text-sm item-name" required>
+                <input type="number" placeholder="Qty" class="col-span-2 p-3 bg-gray-50 border rounded-lg text-sm item-qty" value="1" min="1" required>
+                <input type="number" placeholder="Harga" class="col-span-4 p-3 bg-gray-50 border rounded-lg text-sm item-price" min="0" required>
+                <button type="button" onclick="this.parentElement.remove(); calculateTotal()" class="col-span-1 bg-red-50 text-red-500 p-3 rounded-lg font-bold">×</button>
             `;
             container.appendChild(itemDiv);
             itemDiv.querySelectorAll('input').forEach(input => input.addEventListener('input', calculateTotal));
         }
 
-        // =====================================================
-        //  HITUNG TOTAL (dengan/tanpa PPN sesuai checkbox)
-        // =====================================================
         function calculateTotal() {
             const items = [];
             let subtotal = 0;
-
             document.querySelectorAll('#items-container > div').forEach(div => {
-                const name  = div.querySelector('.item-name').value;
-                const qty   = parseInt(div.querySelector('.item-qty').value)   || 0;
+                const name = div.querySelector('.item-name').value;
+                const qty = parseInt(div.querySelector('.item-qty').value) || 0;
                 const price = parseInt(div.querySelector('.item-price').value) || 0;
-                if (name && qty && price) {
+                if(name && qty && price) {
                     items.push({ name, qty, price, total: qty * price });
                     subtotal += (qty * price);
                 }
             });
-
-            // Cek status toggle PPN
-            const ppnChecked = document.getElementById('ppn-toggle').checked;
-            const ppn   = ppnChecked ? Math.round(subtotal * 0.11) : 0;
+            const ppn = Math.round(subtotal * 0.11);
             const total = subtotal + ppn;
 
-            // Update tampilan
             document.getElementById('subtotal-display').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
-            document.getElementById('ppn-display').innerText      = 'Rp ' + ppn.toLocaleString('id-ID');
-            document.getElementById('total-display').innerText    = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('ppn-display').innerText = 'Rp ' + ppn.toLocaleString('id-ID');
+            document.getElementById('total-display').innerText = 'Rp ' + total.toLocaleString('id-ID');
 
-            // Tampilkan/sembunyikan info row & badge PPN
-            const ppnInfoRow = document.getElementById('ppn-info-row');
-            const ppnBadge   = document.getElementById('ppn-badge');
-            if (ppnChecked) {
-                ppnInfoRow.classList.remove('hidden');
-                ppnBadge.classList.remove('hidden');
-                document.getElementById('ppn-display').classList.add('text-amber-600');
-                document.getElementById('ppn-display').classList.remove('text-indigo-900');
-            } else {
-                ppnInfoRow.classList.add('hidden');
-                ppnBadge.classList.add('hidden');
-                document.getElementById('ppn-display').classList.remove('text-amber-600');
-                document.getElementById('ppn-display').classList.add('text-indigo-900');
-            }
-
-            // Simpan ke hidden fields
             document.getElementById('field_x07').value = JSON.stringify(items);
             document.getElementById('field_x08').value = subtotal;
             document.getElementById('field_x09').value = ppn;
             document.getElementById('field_x10').value = total;
-            document.getElementById('field_x14').value = ppnChecked ? '1' : '0';
         }
 
-        // Helper set status toggle PPN
-        function setPPNToggle(active) {
-            const toggle = document.getElementById('ppn-toggle');
-            toggle.checked = active;
-            calculateTotal();
-        }
-
-        // =====================================================
-        //  EDIT DATA
-        // =====================================================
         function editData(id) {
             isEditMode = true;
             const item = allData.find(d => d.id_x === id);
-            if (!item) return;
+            if(!item) return;
             
             document.getElementById('modal-title').innerText = "Update Invoice";
-            document.getElementById('edit_id_x').value   = item.id_x;
-            document.getElementById('field_x01').value   = item.x_01;
-            document.getElementById('field_x02').value   = item.x_02;
-            document.getElementById('field_x03').value   = item.x_03;
-            document.getElementById('field_x04').value   = item.x_04;
-            document.getElementById('field_x05').value   = item.x_05;
-            document.getElementById('field_x06').value   = item.x_06;
-            document.getElementById('field_x11').value   = item.x_11 || "";
-            document.getElementById('field_x12').value   = item.x_12;
-            document.getElementById('field_x13').value   = item.x_13;
-
-            // Pulihkan status PPN dari data (field x_14: "1" = ada PPN)
-            const hasPPN = (item.x_14 == 1 || item.x_14 === '1');
-            document.getElementById('ppn-toggle').checked = hasPPN;
+            document.getElementById('edit_id_x').value = item.id_x;
+            document.getElementById('field_x01').value = item.x_01;
+            document.getElementById('field_x02').value = item.x_02;
+            document.getElementById('field_x03').value = item.x_03;
+            document.getElementById('field_x04').value = item.x_04;
+            document.getElementById('field_x05').value = item.x_05;
+            document.getElementById('field_x06').value = item.x_06;
+            document.getElementById('field_x11').value = item.x_11 || "";
+            document.getElementById('field_x12').value = item.x_12;
+            document.getElementById('field_x13').value = item.x_13;
             
             document.getElementById('items-container').innerHTML = '';
             try {
@@ -474,11 +330,10 @@
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-12 gap-2 items-end';
                     div.innerHTML = `
-                        <input type="text"   value="${itm.name}"  class="col-span-5 p-3 bg-gray-50 border rounded-lg text-sm item-name" required>
-                        <input type="number" value="${itm.qty}"   class="col-span-2 p-3 bg-gray-50 border rounded-lg text-sm item-qty"  min="1" required>
+                        <input type="text" value="${itm.name}" class="col-span-5 p-3 bg-gray-50 border rounded-lg text-sm item-name" required>
+                        <input type="number" value="${itm.qty}" class="col-span-2 p-3 bg-gray-50 border rounded-lg text-sm item-qty" min="1" required>
                         <input type="number" value="${itm.price}" class="col-span-4 p-3 bg-gray-50 border rounded-lg text-sm item-price" min="0" required>
-                        <button type="button" onclick="this.parentElement.remove(); calculateTotal()" 
-                                class="col-span-1 bg-red-50 text-red-500 p-3 rounded-lg font-bold hover:bg-red-100">×</button>
+                        <button type="button" onclick="this.parentElement.remove(); calculateTotal()" class="col-span-1 bg-red-50 text-red-500 p-3 rounded-lg font-bold">×</button>
                     `;
                     container.appendChild(div);
                     div.querySelectorAll('input').forEach(input => input.addEventListener('input', calculateTotal));
@@ -489,12 +344,9 @@
             document.getElementById('modal-form').classList.remove('hidden');
         }
 
-        // =====================================================
-        //  SUBMIT FORM
-        // =====================================================
         document.getElementById('sign-form').onsubmit = async (e) => {
             e.preventDefault();
-            calculateTotal(); // pastikan semua nilai terupdate
+            calculateTotal();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             let finalUrl = `${APP_CONFIG.api.baseUrl}?table=${APP_CONFIG.api.tableName}`;
@@ -506,13 +358,15 @@
                     headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': APP_CONFIG.api.authKey },
                     body: JSON.stringify(data)
                 });
-                if (res.ok) { closeModal(); loadData(); }
+                if(res.ok) { closeModal(); loadData(); }
             } catch (e) { alert('Gagal Simpan'); }
         };
 
-        // =====================================================
-        //  QR CODE
-        // =====================================================
+        function generateNoInvoice() {
+            const now = new Date();
+            return `${APP_CONFIG.ui.noInvoiceFormat}/${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${(allData.length+1).toString().padStart(4,'0')}`;
+        }
+
         function openQR(token) {
             document.getElementById('modal-qr').classList.remove('hidden');
             document.getElementById('qrcode-preview').innerHTML = '';
@@ -523,22 +377,16 @@
             });
         }
 
-        // =====================================================
-        //  UTILITY
-        // =====================================================
-        function logout()      { sessionStorage.clear(); location.reload(); }
-        function closeModal()  { document.getElementById('modal-form').classList.add('hidden'); }
-        function closeQR()     { document.getElementById('modal-qr').classList.add('hidden'); }
-
+        function logout() { sessionStorage.clear(); location.reload(); }
+        function closeModal() { document.getElementById('modal-form').classList.add('hidden'); }
+        function closeQR() { document.getElementById('modal-qr').classList.add('hidden'); }
         function downloadQR() {
             html2canvas(document.getElementById('qr-capture-area'), { scale: 3 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `QR_INV_${document.getElementById('qr-token-label').innerText}.png`;
-                link.href = canvas.toDataURL(); 
-                link.click();
+                link.href = canvas.toDataURL(); link.click();
             });
         }
-
         function showMainLoader(s) { 
             document.getElementById('main-loader').style.display = s ? 'flex' : 'none'; 
             document.getElementById('table-container').classList.toggle('hidden', s);
