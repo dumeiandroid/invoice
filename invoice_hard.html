@@ -196,15 +196,20 @@
                 console.error(e);
             }
         }
-
+ function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
         function renderInvoice(data) {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('invoice-isi').classList.remove('hidden');
 
             document.getElementById('nomor-invoice').innerText = data.x_04 || '-';
-            document.getElementById('tanggal-invoice').innerText = data.x_05 || '';
-            document.getElementById('tanggal-ttd').innerText = data.x_05 || '';
-            document.getElementById('jatuh-tempo').innerText = data.x_06 || '';
+            document.getElementById('tanggal-invoice').innerText = formatDate(data.x_05) || '';
+            document.getElementById('tanggal-ttd').innerText = formatDate(data.x_05) || '';
+            document.getElementById('jatuh-tempo').innerText = formatDate(data.x_06) || '';
             
             document.getElementById('nama-pelanggan').innerText = data.x_01 || '-';
             document.getElementById('alamat-pelanggan').innerText = data.x_02 || '-';

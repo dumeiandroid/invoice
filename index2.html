@@ -278,13 +278,6 @@
             showMainLoader(false);
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
-
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -304,8 +297,8 @@
                             <div class="text-[9px] text-indigo-500 font-black tracking-tighter mb-1 uppercase flex items-center gap-1">
                                 ${item.x_04}${ppnBadge}
                             </div>
-                            <div class="text-[10px] text-gray-400 font-bold">Tgl: ${formatDate(item.x_05)}</div>
-                            <div class="text-[10px] text-red-500 font-bold">Due: ${formatDate(item.x_06)}</div>
+                            <div class="text-[10px] text-gray-400 font-bold">Tgl: ${item.x_05}</div>
+                            <div class="text-[10px] text-red-500 font-bold">Due: ${item.x_06}</div>
                         </td>
                         <td class="p-6">
                             <div class="text-sm font-black text-gray-700 uppercase">${item.x_01}</div>
