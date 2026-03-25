@@ -6,7 +6,7 @@
     <title>Invoice Resmi - Lidan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body { background-color: #f3f4f6; font-family: 'Times New Roman', Times, serif; }
 
@@ -78,8 +78,7 @@
 <body>
 
     <div class="no-print fixed top-5 right-5 flex gap-2 z-50">
-        <button onclick="window.print()" class="bg-gray-600 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-gray-700 transition text-sm">Cetak / Print</button>
-        <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-indigo-700 transition text-sm">Download PDF (A4)</button>
+        <button onclick="downloadJPG()" id="btn-download" class="bg-indigo-600 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-indigo-700 transition text-sm">⬇ Download JPG (A4)</button>
     </div>
 
     <div class="paper" id="invoice-content">
@@ -299,21 +298,40 @@
             });
         }
 
-        function downloadPDF() {
+        async function downloadJPG() {
+            const btn = document.getElementById('btn-download');
+            btn.innerText = 'Memproses...';
+            btn.disabled = true;
+
             const element = document.getElementById('invoice-content');
-            const nomorInvoice = document.getElementById('nomor-invoice').innerText.replace(/\//g, '_');
-            const opt = {
-                margin: 0,
-                filename: `Invoice_${nomorInvoice}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: {
-                    scale: 2,           /* Turunkan dari 4 → 2 agar tidak overflow */
+            const nomorInvoice = document.getElementById('nomor-invoice').innerText.replace(/\//g, '_') || 'invoice';
+
+            // Sembunyikan shadow sementara agar tidak ikut ter-capture
+            const origBox = element.style.boxShadow;
+            element.style.boxShadow = 'none';
+
+            try {
+                // Screenshot persis seperti tampilan di layar, scale:3 = tajam & terkunci sebagai gambar
+                const canvas = await html2canvas(element, {
+                    scale: 3,
                     useCORS: true,
-                    windowWidth: 794    /* Lebar A4 dalam pixel ~96dpi */
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    // Capture seluruh tinggi konten (bukan hanya viewport)
+                    scrollY: -window.scrollY,
+                    windowWidth: document.documentElement.scrollWidth,
+                    windowHeight: document.documentElement.scrollHeight
+                });
+
+                const link = document.createElement('a');
+                link.download = `Invoice_${nomorInvoice}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            } finally {
+                element.style.boxShadow = origBox;
+                btn.innerText = '⬇ Download JPG (A4)';
+                btn.disabled = false;
+            }
         }
 
         fetchInvoice();
