@@ -1,340 +1,742 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Resmi - Lidan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body { background-color: #f3f4f6; font-family: 'Times New Roman', Times, serif; }
+<meta charset="utf-8"/>
+<title>Invoice Resmi - Lidan</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --brand:      #BF1A54;
+    --brand-dark: #8C0E3A;
+    --brand-light:#FFF0F5;
+    --ink:        #0F0F14;
+    --ink-2:      #4A4A5A;
+    --ink-3:      #9898AA;
+    --rule:       #E8E8F0;
+    --white:      #FFFFFF;
+    --paid-bg:    #DCFCE7; --paid-fg: #15803D; --paid-br: #86EFAC;
+    --due-bg:     #FEF9C3; --due-fg:  #A16207; --due-br:  #FDE047;
+    --over-bg:    #FEE2E2; --over-fg: #B91C1C; --over-br: #FCA5A5;
+    --a4-w: 794px;
+    --a4-h: 1123px;
+  }
 
-        /* === KUNCI: Paper persis A4 dengan ukuran tetap === */
-        .paper {
-            width: 210mm;
-            height: 297mm;          /* Tetapkan tinggi A4 agar tidak overflow */
-            padding: 8mm 14mm 8mm 14mm;
-            margin: 20px auto;
-            background: white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            position: relative;
-            box-sizing: border-box;
-            overflow: hidden;       /* Potong konten yang melebihi 1 halaman */
-        }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .line-header { border-bottom: 2.5px solid #BF1A54; margin-top: 3px; }
-        .line-header-thin { border-bottom: 1px solid #BF1A54; margin-top: 2px; }
+  body {
+    background: #F0EFF5;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+    min-height: 100vh;
+  }
 
-        @media print {
-            body { background: none; padding: 0; margin: 0; }
-            .paper {
-                margin: 0;
-                box-shadow: none;
-                width: 210mm;
-                height: 297mm;
-                padding: 8mm 14mm 8mm 14mm;
-            }
-            .no-print { display: none; }
-        }
+  /* ── Toolbar ── */
+  #toolbar {
+    width: var(--a4-w);
+    max-width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
 
-        /* === TABEL INVOICE: Font & padding lebih kecil === */
-        .invoice-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        .invoice-table th {
-            background-color: #BF1A54;
-            color: white;
-            padding: 6px 8px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 10pt;
-        }
-        .invoice-table td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 10pt;
-        }
-        .invoice-table tr:last-child td { border-bottom: 2px solid #BF1A54; }
+  .btn-dl {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-dl:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(191,26,84,.25); }
+  .btn-dl:active { transform: translateY(0); }
+  .btn-dl.jpg { background: var(--brand); color: #fff; }
+  .btn-dl svg { width:15px; height:15px; flex-shrink:0; }
 
-        .qr-area { width: 70px; height: 70px; }
+  /* ── A4 Sheet ── */
+  #invoice-content {
+    width: var(--a4-w);
+    min-height: var(--a4-h);
+    max-width: 100%;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 20px 60px rgba(0,0,0,.10);
+    overflow: hidden;
+    position: relative;
+  }
 
-        /* === Semua teks lebih kecil untuk muat di A4 === */
-        #invoice-isi { font-size: 10pt; }
+  /* accent strip */
+  #invoice-content::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--brand) 0%, var(--brand-dark) 100%);
+  }
 
-        /* Footer absolut di bawah halaman */
-        .invoice-footer {
-            position: absolute;
-            bottom: 6mm;
-            left: 14mm;
-            right: 14mm;
-            padding-top: 4px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            font-size: 7.5pt;
-            color: #9ca3af;
-            font-style: italic;
-        }
-    </style>
+  /* ── Header ── */
+  #inv-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 40px 28px 48px;
+    border-bottom: 1.5px solid var(--rule);
+    background: linear-gradient(135deg, #FFF8FA 0%, #FFFFFF 60%);
+  }
+  #inv-header .logo-wrap img {
+    height: 44px;
+    object-fit: contain;
+    display: block;
+  }
+  #inv-header .company-info {
+    text-align: right;
+  }
+  #inv-header .company-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -.3px;
+  }
+  #inv-header .company-meta {
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    margin-top: 4px;
+  }
+
+  /* ── Loading ── */
+  #loading {
+    text-align: center;
+    padding: 80px 40px;
+    font-size: 15px;
+    color: var(--ink-3);
+    font-weight: 500;
+    letter-spacing: .2px;
+  }
+
+  /* ── Invoice body ── */
+  #invoice-isi { display: none; }
+
+  /* ── Title row ── */
+  .inv-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 30px 40px 20px 48px;
+    border-bottom: 1.5px solid var(--rule);
+  }
+  .inv-label {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .inv-label span { color: var(--brand); }
+  .inv-meta-table td {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    padding: 2px 0;
+    vertical-align: top;
+  }
+  .inv-meta-table td:first-child {
+    width: 90px;
+    color: var(--ink-3);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: .5px;
+    padding-top: 3px;
+  }
+  .inv-meta-table td:last-child {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 12px;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-width: 1.5px;
+    border-style: solid;
+  }
+  .status-badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .7;
+  }
+
+  /* ── From / To ── */
+  .inv-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 24px 40px 24px 48px;
+    border-bottom: 1.5px solid var(--rule);
+  }
+  .party-block + .party-block { border-left: 1.5px solid var(--rule); padding-left: 32px; }
+  .party-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 8px;
+  }
+  .party-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .party-detail {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+
+  /* ── Items table ── */
+  .inv-items {
+    padding: 0 40px 0 48px;
+    margin-top: 20px;
+  }
+  .inv-items table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .inv-items thead th {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 10px 10px;
+    border-bottom: 2px solid var(--rule);
+  }
+  .inv-items thead th:first-child { padding-left: 0; text-align: left; }
+  .inv-items thead th:nth-child(2) { text-align: center; }
+  .inv-items thead th:nth-child(3),
+  .inv-items thead th:nth-child(4) { text-align: right; }
+  .items-row td {
+    padding: 11px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    vertical-align: middle;
+  }
+  .items-row td:first-child { padding-left: 0; font-weight: 600; }
+  .items-row td:nth-child(2) { text-align: center; color: var(--ink-2); font-weight: 600; }
+  .items-row td:nth-child(3) { text-align: right; color: var(--ink-2); }
+  .items-row td:nth-child(4) { text-align: right; font-weight: 700; }
+  .items-row:last-child td { border-bottom: 2px solid var(--brand); }
+  .items-row:nth-child(even) td { background: #FAFAFA; }
+
+  /* ── Total ── */
+  .inv-total {
+    padding: 16px 40px 20px 48px;
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1.5px solid var(--rule);
+  }
+  .total-box {
+    background: var(--brand);
+    color: #fff;
+    border-radius: 12px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 260px;
+    justify-content: space-between;
+  }
+  .total-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: .8;
+  }
+  .total-amount {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── Notes ── */
+  #catatan-section {
+    padding: 16px 40px 16px 48px;
+    border-bottom: 1.5px solid var(--rule);
+  }
+  .notes-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  #catatan {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    padding: 10px 14px;
+    background: #F8F8FB;
+    border-left: 3px solid var(--brand);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* ── Payment + Signature ── */
+  .inv-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0;
+    padding: 24px 40px 24px 48px;
+    border-bottom: 1.5px solid var(--rule);
+    align-items: start;
+  }
+  .payment-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+  .payment-table td {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    padding: 2.5px 0;
+    vertical-align: top;
+  }
+  .payment-table td:first-child {
+    width: 100px;
+    color: var(--ink-3);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding-top: 3px;
+  }
+  .payment-table td:last-child {
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 12px;
+  }
+  .payment-note {
+    font-size: 10.5px;
+    color: var(--brand);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* Signature block */
+  .sig-block {
+    text-align: center;
+    min-width: 140px;
+  }
+  .sig-date {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  .sig-company {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  #qrcode {
+    margin: 0 auto 10px;
+    line-height: 0;
+  }
+  #qrcode img, #qrcode canvas {
+    border-radius: 6px;
+    border: 2px solid var(--rule);
+    padding: 4px;
+    background: #fff;
+  }
+  .sig-line {
+    width: 100px;
+    height: 1.5px;
+    background: var(--ink);
+    margin: 8px auto 4px;
+    border-radius: 2px;
+  }
+  .sig-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .sig-verified {
+    font-size: 10px;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .sig-verified::before {
+    content: '✓';
+    display: inline-block;
+    width: 13px; height: 13px;
+    background: #dcfce7;
+    color: #15803d;
+    border-radius: 50%;
+    font-size: 9px;
+    line-height: 13px;
+    text-align: center;
+  }
+
+  /* ── Footer ── */
+  #inv-footer {
+    padding: 14px 40px 22px 48px;
+    text-align: center;
+  }
+  .footer-text {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
+  .footer-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    opacity: .6;
+  }
+
+  /* ── Print / export ── */
+  @media print {
+    body { background: none; padding: 0; }
+    #toolbar { display: none; }
+    #invoice-content {
+      box-shadow: none;
+      border-radius: 0;
+      width: 210mm;
+      min-height: 297mm;
+    }
+  }
+</style>
 </head>
 <body>
 
-    <div class="no-print fixed top-5 right-5 flex gap-2 z-50">
-        <button onclick="downloadJPG()" id="btn-download" class="bg-indigo-600 text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-indigo-700 transition text-sm">⬇ Download JPG (A4)</button>
+<!-- Toolbar -->
+<div id="toolbar">
+  <button class="btn-dl jpg" onclick="downloadJPG()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download JPG
+  </button>
+</div>
+
+<!-- A4 Sheet -->
+<div id="invoice-content">
+
+  <!-- Header -->
+  <div id="inv-header">
+    <div class="logo-wrap">
+      <img alt="Logo Lidan" crossorigin="anonymous" src="https://lidan.co.id/gambar/logo-baru.png"/>
+    </div>
+    <div class="company-info">
+      <div class="company-name">PT Lidan Indah Abadi</div>
+      <div class="company-meta">
+        Jl. Imam Bonjol No. 9, Regus Forum Nine Lt.9<br/>
+        Medan, Sumatera Utara<br/>
+        info@lidan.co.id · lidan.co.id · 0851 5960 1400
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">Menyusun Dokumen…</div>
+
+  <!-- Invoice body -->
+  <div id="invoice-isi">
+
+    <!-- Title + Status -->
+    <div class="inv-title-row">
+      <div>
+        <div class="inv-label">INV<span>OICE</span></div>
+        <table class="inv-meta-table">
+          <tr><td>No. Invoice</td><td>: <span id="nomor-invoice"></span></td></tr>
+          <tr><td>Tanggal</td><td>: <span id="tanggal-invoice"></span></td></tr>
+          <tr><td>Jatuh Tempo</td><td>: <span id="jatuh-tempo"></span></td></tr>
+        </table>
+      </div>
+      <div style="padding-top:4px;">
+        <span id="status-badge" class="status-badge"></span>
+      </div>
     </div>
 
-    <div class="paper" id="invoice-content">
-
-        <!-- HEADER -->
-        <div class="flex items-center gap-3 mb-0">
-            <img src="https://lidan.co.id/gambar/logo-baru.png" alt="Logo Lidan" class="w-20 h-auto object-contain">
-            <div class="flex-1 text-center">
-                <h1 style="color: #BF1A54; font-size: 20pt;" class="font-bold uppercase tracking-widest">
-                    PT Lidan Indah Abadi
-                </h1>
-                <p style="font-size: 9pt;">Jl. Imam Bonjol No. 9, Regus Forum Nine Lt.9, Medan, Sumatera Utara</p>
-                <p style="font-size: 8.5pt;" class="italic text-gray-600">Email: info@lidan.co.id | Website: lidan.co.id | Whatsapp: 0851 5960 1400</p>
-            </div>
+    <!-- Dari / Kepada -->
+    <div class="inv-parties">
+      <div class="party-block">
+        <div class="party-label">Dari</div>
+        <div class="party-name">PT Lidan Indah Abadi</div>
+        <div class="party-detail">
+          Jl. Imam Bonjol No. 9<br/>
+          Regus Forum Nine Lt.9<br/>
+          Medan, Sumatera Utara<br/>
+          0851 5960 1400
         </div>
+      </div>
+      <div class="party-block">
+        <div class="party-label">Kepada</div>
+        <div class="party-name" id="nama-pelanggan"></div>
+        <div class="party-detail" id="alamat-pelanggan"></div>
+        <div class="party-detail" id="kontak-pelanggan" style="margin-top:4px;"></div>
+      </div>
+    </div>
 
-        <div class="line-header"></div>
-        <div class="line-header-thin"></div>
+    <!-- Items -->
+    <div class="inv-items">
+      <table>
+        <thead>
+          <tr>
+            <th>Deskripsi Item / Layanan</th>
+            <th>Qty</th>
+            <th>Harga Satuan</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+    </div>
 
-        <div id="loading" class="text-center py-10">
-            <p class="animate-pulse font-bold text-gray-400">Menyusun Dokumen...</p>
-        </div>
+    <!-- Total -->
+    <div class="inv-total">
+      <div class="total-box">
+        <span class="total-label">Total</span>
+        <span class="total-amount" id="total-display"></span>
+      </div>
+    </div>
 
-        <div id="invoice-isi" class="hidden mt-3">
+    <!-- Notes -->
+    <div id="catatan-section">
+      <div class="notes-label">Catatan / Notes</div>
+      <div id="catatan"></div>
+    </div>
 
-            <!-- JUDUL INVOICE + STATUS -->
-            <div class="flex justify-between items-start mb-3">
-                <div>
-                    <h2 class="font-black uppercase tracking-wider mb-1" style="color: #BF1A54; font-size: 22pt;">INVOICE</h2>
-                    <table style="font-size: 9.5pt;">
-                        <tr><td class="pr-3 font-bold">No. Invoice</td><td>: <span id="nomor-invoice" class="font-black"></span></td></tr>
-                        <tr><td class="font-bold">Tanggal</td><td>: <span id="tanggal-invoice"></span></td></tr>
-                        <tr><td class="font-bold text-red-600">Jatuh Tempo</td><td>: <span id="jatuh-tempo" class="text-red-600 font-black"></span></td></tr>
-                    </table>
-                </div>
-                <div id="status-container" class="text-right">
-                    <div id="status-badge" class="inline-block px-4 py-2 rounded-xl font-black uppercase" style="font-size: 12pt;"></div>
-                </div>
-            </div>
+    <!-- Payment + Signature -->
+    <div class="inv-bottom">
+      <div>
+        <div class="payment-label">Informasi Pembayaran</div>
+        <table class="payment-table">
+          <tr><td>Bank</td><td>: PERMATA</td></tr>
+          <tr><td>No. Rekening</td><td>: 04124920006</td></tr>
+          <tr><td>Atas Nama</td><td>: PT Lidan Indah Abadi</td></tr>
+        </table>
+        <div class="payment-note">* Harap sertakan nomor invoice saat transfer</div>
+      </div>
 
-            <!-- DARI / KEPADA -->
-            <div class="grid grid-cols-2 gap-4 mb-3">
-                <div class="border-2 border-gray-200 p-3 rounded-lg">
-                    <h3 class="font-bold mb-1 uppercase" style="color: #BF1A54; font-size: 8.5pt;">Dari:</h3>
-                    <p class="font-black" style="font-size: 11pt;">PT Lidan Indah Abadi</p>
-                    <p style="font-size: 9pt; margin-top: 3px;">Jl. Imam Bonjol No. 9</p>
-                    <p style="font-size: 9pt;">Regus Forum Nine Lt.9</p>
-                    <p style="font-size: 9pt;">Medan, Sumatera Utara</p>
-                    <p style="font-size: 9pt; margin-top: 3px;" class="font-bold">0851 5960 1400</p>
-                </div>
-                <div class="border-2 border-indigo-200 p-3 rounded-lg bg-indigo-50">
-                    <h3 class="font-bold mb-1 uppercase text-indigo-700" style="font-size: 8.5pt;">Kepada:</h3>
-                    <p id="nama-pelanggan" class="font-black text-indigo-900" style="font-size: 11pt;"></p>
-                    <p id="alamat-pelanggan" class="text-gray-700 leading-snug" style="font-size: 9pt; margin-top: 3px;"></p>
-                    <p id="kontak-pelanggan" class="font-bold text-indigo-600" style="font-size: 9pt; margin-top: 3px;"></p>
-                </div>
-            </div>
+      <div class="sig-block">
+        <div class="sig-date">Medan, <span id="tanggal-ttd"></span></div>
+        <div class="sig-company">PT Lidan Indah Abadi</div>
+        <div id="qrcode"></div>
+        <div class="sig-line"></div>
+        <div class="sig-name">Finance Department</div>
+        <div class="sig-verified">Digital Signature Verified</div>
+      </div>
+    </div>
 
-            <!-- TABEL ITEM -->
-            <table class="invoice-table">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="width: 50%;">Deskripsi Item/Layanan</th>
-                        <th class="text-center" style="width: 10%;">Qty</th>
-                        <th class="text-right" style="width: 20%;">Harga Satuan</th>
-                        <th class="text-right" style="width: 20%;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="items-tbody">
-                </tbody>
-            </table>
+    <!-- Footer -->
+    <div id="inv-footer">
+      <div class="footer-text">
+        Invoice ini sah dan diterbitkan secara elektronik. Untuk verifikasi, scan QR Code atau kunjungi: lidan.co.id/sign/invoice
+      </div>
+      <div class="footer-id">ID: <span id="token-display"></span></div>
+    </div>
 
-            <!-- TOTAL -->
-            <div class="flex justify-end mt-1">
-                <table>
-                    <tr>
-                        <td class="py-1 font-black uppercase text-gray-800" style="font-size: 11pt;">TOTAL:</td>
-                        <td id="total-display" class="py-1 text-right font-black pl-4" style="color: #BF1A54; font-size: 18pt;"></td>
-                    </tr>
-                </table>
-            </div>
+  </div><!-- /invoice-isi -->
+</div><!-- /invoice-content -->
 
-            <!-- CATATAN -->
-            <div id="catatan-section" class="mt-2 p-3 bg-yellow-50 rounded-lg border-2 border-yellow-200">
-                <p class="font-bold mb-1" style="color: #BF1A54; font-size: 8.5pt;">Catatan / Notes:</p>
-                <p id="catatan" class="text-gray-700 leading-snug" style="font-size: 9pt;"></p>
-            </div>
+<script>
+  const API_URL      = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
+  const TABLE_TARGET = 'invoice';
+  const AUTH_KEY     = 'admin';
+  const urlParams    = new URLSearchParams(window.location.search);
+  const token        = urlParams.get('token');
 
-            <!-- PEMBAYARAN + TTD -->
-            <div class="mt-3 border-t-2 pt-3">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 class="font-bold mb-2" style="font-size: 9pt;">Informasi Pembayaran:</h4>
-                        <table style="font-size: 9pt;">
-                            <tr><td class="font-bold pr-3">Bank</td><td>: PERMATA</td></tr>
-                            <tr><td class="font-bold">No. Rekening</td><td>: 04124920006</td></tr>
-                            <tr><td class="font-bold">Atas Nama</td><td>: PT Lidan Indah Abadi</td></tr>
-                        </table>
-                        <p class="italic text-gray-500 mt-2" style="font-size: 7.5pt;">* Harap sertakan nomor invoice saat transfer</p>
-                    </div>
-                    <div class="text-right">
-                        <p style="font-size: 9pt;" class="mb-1">Medan, <span id="tanggal-ttd"></span></p>
-                        <p class="font-bold" style="font-size: 9pt;">PT Lidan Indah Abadi</p>
-                        <div class="flex justify-end items-center mt-2 mb-8">
-                            <div id="qrcode" class="qr-area p-1 border border-gray-300 rounded-lg shadow-sm"></div>
-                        </div>
-                        <p class="font-bold underline" style="font-size: 10pt;">Finance Department</p>
-                        <p class="italic text-gray-400 mt-1" style="font-size: 7.5pt;">Digital Signature Verified</p>
-                    </div>
-                </div>
-            </div>
+  /* ── QR config from URL params (or JSON default) ── */
+  const qrConfig = {
+    size:        parseInt(urlParams.get('qr_size'))   || 80,   // px
+    offsetY:     parseInt(urlParams.get('qr_offset_y')) || 0,  // px, positive = down
+  };
 
-        </div><!-- /invoice-isi -->
+  async function fetchInvoice() {
+    if (!token) {
+      document.getElementById('loading').innerHTML = "<span style='color:#dc2626;font-weight:700;'>Error: Token Tidak Ditemukan.</span>";
+      return;
+    }
+    try {
+      const res    = await fetch(`${API_URL}?table=${TABLE_TARGET}&x_12_eq=${token}`, {
+        headers: { 'X-Custom-Auth': AUTH_KEY }
+      });
+      const result = await res.json();
+      if (result.success && result.data.length > 0) {
+        renderInvoice(result.data[0]);
+      } else {
+        document.getElementById('loading').innerHTML = "<span style='color:#dc2626;font-weight:700;'>Error: Data Invoice Tidak Valid.</span>";
+      }
+    } catch (e) { console.error(e); }
+  }
 
-        <!-- FOOTER ABSOLUT -->
-        <div class="invoice-footer">
-            <p>Invoice ini sah dan diterbitkan secara elektronik. Untuk verifikasi, scan QR Code atau kunjungi: lidan.co.id/sign/invoice</p>
-            <p class="mt-0.5">ID: <span id="token-display" class="font-mono"></span></p>
-        </div>
+  function formatDate(s) {
+    if (!s) return '-';
+    const p = s.split('-');
+    return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : s;
+  }
 
-    </div><!-- /paper -->
+  function renderInvoice(data) {
+    document.getElementById('loading').style.display     = 'none';
+    document.getElementById('invoice-isi').style.display = 'block';
 
-    <script>
-        const API_URL = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
-        const TABLE_TARGET = 'invoice';
-        const AUTH_KEY = 'admin';
+    document.getElementById('nomor-invoice').innerText    = data.x_04 || '-';
+    document.getElementById('tanggal-invoice').innerText  = formatDate(data.x_05);
+    document.getElementById('tanggal-ttd').innerText      = formatDate(data.x_05);
+    document.getElementById('jatuh-tempo').innerText      = formatDate(data.x_06);
+    document.getElementById('nama-pelanggan').innerText   = data.x_01 || '-';
+    document.getElementById('alamat-pelanggan').innerText = data.x_02 || '-';
+    document.getElementById('kontak-pelanggan').innerText = data.x_03 || '-';
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+    /* Status badge */
+    const badge  = document.getElementById('status-badge');
+    const status = (data.x_13 || 'UNPAID').toUpperCase();
+    badge.innerText = status;
+    if      (status === 'PAID')    badge.style.cssText = 'background:var(--paid-bg);color:var(--paid-fg);border-color:var(--paid-br);';
+    else if (status === 'OVERDUE') badge.style.cssText = 'background:var(--over-bg);color:var(--over-fg);border-color:var(--over-br);';
+    else                           badge.style.cssText = 'background:var(--due-bg);color:var(--due-fg);border-color:var(--due-br);';
 
-        async function fetchInvoice() {
-            if (!token) {
-                document.getElementById('loading').innerHTML = "<span class='text-red-500'>Error: Token Tidak Ditemukan.</span>";
-                return;
-            }
-            try {
-                const res = await fetch(`${API_URL}?table=${TABLE_TARGET}&x_12_eq=${token}`, {
-                    headers: { 'X-Custom-Auth': AUTH_KEY }
-                });
-                const result = await res.json();
-                if (result.success && result.data.length > 0) {
-                    renderInvoice(result.data[0]);
-                } else {
-                    document.getElementById('loading').innerHTML = "<span class='text-red-500'>Error: Data Invoice Tidak Valid.</span>";
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
+    /* Items */
+    try {
+      /* QR config juga bisa dari field JSON data (x_14 misalnya) */
+      let qrCfg = { ...qrConfig };
+      if (data.x_14) {
+        try {
+          const fromData = JSON.parse(data.x_14);
+          if (fromData.qr_size)     qrCfg.size    = fromData.qr_size;
+          if (fromData.qr_offset_y !== undefined) qrCfg.offsetY = fromData.qr_offset_y;
+        } catch(_) {}
+      }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
+      const items = JSON.parse(data.x_07 || '[]');
+      const tbody = document.getElementById('items-tbody');
+      tbody.innerHTML = '';
+      items.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = 'items-row';
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>Rp ${parseInt(item.price).toLocaleString('id-ID')}</td>
+          <td>Rp ${parseInt(item.total).toLocaleString('id-ID')}</td>`;
+        tbody.appendChild(tr);
+      });
 
-        function renderInvoice(data) {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('invoice-isi').classList.remove('hidden');
+      /* QR code with configurable size & vertical offset */
+      const qrEl = document.getElementById('qrcode');
+      qrEl.style.width        = qrCfg.size + 'px';
+      qrEl.style.height       = qrCfg.size + 'px';
+      qrEl.style.position     = 'relative';
+      qrEl.style.marginTop    = qrCfg.offsetY + 'px';
+      qrEl.style.marginBottom = (-qrCfg.offsetY) + 'px';
 
-            document.getElementById('nomor-invoice').innerText = data.x_04 || '-';
-            document.getElementById('tanggal-invoice').innerText = formatDate(data.x_05) || '';
-            document.getElementById('tanggal-ttd').innerText = formatDate(data.x_05) || '';
-            document.getElementById('jatuh-tempo').innerText = formatDate(data.x_06) || '';
+      const verificationUrl = `https://sign.lidan.co.id/invoice.html?token=${data.x_12}`;
+      new QRCode(qrEl, {
+        text:         verificationUrl,
+        width:        qrCfg.size,
+        height:       qrCfg.size,
+        colorDark:    '#0F0F14',
+        colorLight:   '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.M
+      });
 
-            document.getElementById('nama-pelanggan').innerText = data.x_01 || '-';
-            document.getElementById('alamat-pelanggan').innerText = data.x_02 || '-';
-            document.getElementById('kontak-pelanggan').innerText = data.x_03 || '-';
+    } catch (e) { console.error(e); }
 
-            const statusBadge = document.getElementById('status-badge');
-            const status = data.x_13 || 'UNPAID';
-            statusBadge.innerText = status;
+    document.getElementById('total-display').innerText = 'Rp ' + parseInt(data.x_10 || 0).toLocaleString('id-ID');
+    document.getElementById('token-display').innerText = data.x_12 || '';
 
-            if (status === 'PAID') {
-                statusBadge.className = 'inline-block px-4 py-2 rounded-xl font-black uppercase bg-green-100 text-green-700 border-2 border-green-300';
-            } else if (status === 'OVERDUE') {
-                statusBadge.className = 'inline-block px-4 py-2 rounded-xl font-black uppercase bg-red-100 text-red-700 border-2 border-red-300';
-            } else {
-                statusBadge.className = 'inline-block px-4 py-2 rounded-xl font-black uppercase bg-yellow-100 text-yellow-700 border-2 border-yellow-300';
-            }
+    if (data.x_11) {
+      document.getElementById('catatan').innerText = data.x_11;
+    } else {
+      document.getElementById('catatan-section').style.display = 'none';
+    }
+  }
 
-            try {
-                const items = JSON.parse(data.x_07 || '[]');
-                const tbody = document.getElementById('items-tbody');
-                tbody.innerHTML = '';
-                items.forEach((item) => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="font-semibold">${item.name}</td>
-                            <td class="text-center font-bold">${item.qty}</td>
-                            <td class="text-right">Rp ${parseInt(item.price).toLocaleString('id-ID')}</td>
-                            <td class="text-right font-bold">Rp ${parseInt(item.total).toLocaleString('id-ID')}</td>
-                        </tr>`;
-                });
-            } catch (e) {
-                console.error('Error parsing items:', e);
-            }
+  /* ── Download JPG (A4 proportion) ── */
+  async function downloadJPG() {
+    const btn = document.querySelector('.btn-dl.jpg');
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Memproses…`;
+    btn.disabled = true;
 
-            document.getElementById('total-display').innerText = 'Rp ' + parseInt(data.x_10 || 0).toLocaleString('id-ID');
-            document.getElementById('token-display').innerText = data.x_12;
+    const el = document.getElementById('invoice-content');
+    const scale = 2; /* 2× for crisp output */
 
-            if (data.x_11) {
-                document.getElementById('catatan').innerText = data.x_11;
-            } else {
-                document.getElementById('catatan-section').classList.add('hidden');
-            }
+    try {
+      const canvas = await html2canvas(el, {
+        scale:           scale,
+        useCORS:         true,
+        allowTaint:      false,
+        backgroundColor: '#FFFFFF',
+        width:           794,
+        height:          el.scrollHeight,
+        windowWidth:     794,
+        logging:         false,
+      });
 
-            const verificationUrl = `https://sign.lidan.co.id/invoice.html?token=${data.x_12}`;
-            new QRCode(document.getElementById("qrcode"), {
-                text: verificationUrl,
-                width: 70,
-                height: 70,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: 3
-            });
-        }
+      /* Crop / pad to exact A4 ratio (794 × 1123) */
+      const A4H    = 1123 * scale;
+      const A4W    = 794  * scale;
+      const srcH   = Math.min(canvas.height, A4H);
 
-        async function downloadJPG() {
-            const btn = document.getElementById('btn-download');
-            btn.innerText = 'Memproses...';
-            btn.disabled = true;
+      const out    = document.createElement('canvas');
+      out.width    = A4W;
+      out.height   = A4H;
+      const ctx    = out.getContext('2d');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, A4W, A4H);
+      ctx.drawImage(canvas, 0, 0, A4W, srcH, 0, 0, A4W, srcH);
 
-            const element = document.getElementById('invoice-content');
-            const nomorInvoice = document.getElementById('nomor-invoice').innerText.replace(/\//g, '_') || 'invoice';
+      const link = document.createElement('a');
+      link.download = `Invoice_Lidan_${document.getElementById('nomor-invoice').innerText || 'download'}.jpg`;
+      link.href = out.toDataURL('image/jpeg', 0.95);
+      link.click();
+    } catch(e) { console.error(e); alert('Gagal mengunduh. Coba lagi.'); }
 
-            // Sembunyikan shadow sementara agar tidak ikut ter-capture
-            const origBox = element.style.boxShadow;
-            element.style.boxShadow = 'none';
+    btn.innerHTML = orig;
+    btn.disabled  = false;
+  }
 
-            try {
-                // Screenshot persis seperti tampilan di layar, scale:3 = tajam & terkunci sebagai gambar
-                const canvas = await html2canvas(element, {
-                    scale: 3,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    // Capture seluruh tinggi konten (bukan hanya viewport)
-                    scrollY: -window.scrollY,
-                    windowWidth: document.documentElement.scrollWidth,
-                    windowHeight: document.documentElement.scrollHeight
-                });
-
-                const link = document.createElement('a');
-                link.download = `Invoice_${nomorInvoice}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.95);
-                link.click();
-            } finally {
-                element.style.boxShadow = origBox;
-                btn.innerText = '⬇ Download JPG (A4)';
-                btn.disabled = false;
-            }
-        }
-
-        fetchInvoice();
-    </script>
+  fetchInvoice();
+</script>
 </body>
 </html>
