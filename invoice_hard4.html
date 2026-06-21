@@ -550,9 +550,9 @@
       <div>
         <div class="payment-label">Informasi Pembayaran</div>
         <table class="payment-table">
-          <tr><td>Bank</td><td id="payment-bank">: PERMATA</td></tr>
-          <tr><td>No. Rekening</td><td id="payment-norek">: 04124920006</td></tr>
-          <tr><td>Atas Nama</td><td id="payment-nama">: PT Lidan Indah Abadi</td></tr>
+          <tr><td>Bank</td><td>: PERMATA</td></tr>
+          <tr><td>No. Rekening</td><td>: 04124920006</td></tr>
+          <tr><td>Atas Nama</td><td>: PT Lidan Indah Abadi</td></tr>
         </table>
         <div class="payment-note">* Harap sertakan nomor invoice saat transfer</div>
       </div>
@@ -647,12 +647,7 @@
         } catch(_) {}
       }
 
-      const parsedX07 = JSON.parse(data.x_07 || '[]');
-      /* Backward compatible: x_07 lama = array items langsung,
-         x_07 baru = { items: [...], rekening: {...} | null } */
-      const items    = Array.isArray(parsedX07) ? parsedX07 : (parsedX07.items || []);
-      const rekening = Array.isArray(parsedX07) ? null       : (parsedX07.rekening || null);
-
+      const items = JSON.parse(data.x_07 || '[]');
       const tbody = document.getElementById('items-tbody');
       tbody.innerHTML = '';
       items.forEach((item) => {
@@ -665,13 +660,6 @@
           <td>Rp ${parseInt(item.total).toLocaleString('id-ID')}</td>`;
         tbody.appendChild(tr);
       });
-
-      /* Data Rekening: pakai data custom dari JSON jika ada, jika tidak fallback ke default Permata */
-      const DEFAULT_REKENING = { bank: 'PERMATA', no_rekening: '04124920006', atas_nama: 'PT Lidan Indah Abadi' };
-      const rek = rekening || DEFAULT_REKENING;
-      document.getElementById('payment-bank').innerText  = ': ' + rek.bank;
-      document.getElementById('payment-norek').innerText = ': ' + rek.no_rekening;
-      document.getElementById('payment-nama').innerText  = ': ' + rek.atas_nama;
 
       /* QR code with configurable size & vertical offset */
       const qrEl = document.getElementById('qrcode');
