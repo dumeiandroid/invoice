@@ -146,29 +146,6 @@
                     <div id="items-container" class="space-y-3"></div>
                 </div>
 
-                <!-- Informasi Rekening -->
-                <div class="border-t pt-6 mb-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <label class="text-[10px] font-black uppercase text-indigo-500 tracking-widest">Informasi Rekening</label>
-                        <select id="rekening-mode" onchange="toggleRekeningMode()" 
-                                class="text-xs font-bold border border-gray-200 rounded-lg p-2 bg-gray-50 outline-none">
-                            <option value="default">Pakai Default (Permata)</option>
-                            <option value="custom">Custom / Edit Rekening</option>
-                        </select>
-                    </div>
-                    <div id="rekening-custom-fields" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input type="text" id="rek-bank" placeholder="Nama Bank" 
-                               class="p-3 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:border-indigo-500"
-                               oninput="calculateTotal()">
-                        <input type="text" id="rek-norek" placeholder="No. Rekening" 
-                               class="p-3 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:border-indigo-500"
-                               oninput="calculateTotal()">
-                        <input type="text" id="rek-nama" placeholder="Atas Nama" 
-                               class="p-3 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none focus:border-indigo-500"
-                               oninput="calculateTotal()">
-                    </div>
-                </div>
-
                 <!-- Ringkasan & Kalkulasi -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <textarea name="x_11" id="field_x11" placeholder="Catatan / Notes (Opsional)" 
@@ -253,47 +230,6 @@
     <script>
         let allData = [];
         let isEditMode = false;
-
-        // Default Rekening (fallback jika tidak ada data custom)
-        const DEFAULT_REKENING = { bank: 'PERMATA', no_rekening: '04124920006', atas_nama: 'PT Lidan Indah Abadi' };
-
-        // Tampilkan/sembunyikan field custom rekening sesuai pilihan mode
-        function toggleRekeningMode() {
-            const mode = document.getElementById('rekening-mode').value;
-            const box  = document.getElementById('rekening-custom-fields');
-            if (mode === 'custom') {
-                box.classList.remove('hidden');
-                // Prefill dengan default agar mudah diedit, hanya jika masih kosong
-                if (!document.getElementById('rek-bank').value && !document.getElementById('rek-norek').value) {
-                    document.getElementById('rek-bank').value   = DEFAULT_REKENING.bank;
-                    document.getElementById('rek-norek').value  = DEFAULT_REKENING.no_rekening;
-                    document.getElementById('rek-nama').value   = DEFAULT_REKENING.atas_nama;
-                }
-            } else {
-                box.classList.add('hidden');
-            }
-            calculateTotal();
-        }
-
-        // Ambil data rekening custom (null jika mode default -> invoice_hard akan fallback ke default)
-        function getRekeningData() {
-            const mode = document.getElementById('rekening-mode').value;
-            if (mode !== 'custom') return null;
-            const bank        = document.getElementById('rek-bank').value.trim();
-            const no_rekening = document.getElementById('rek-norek').value.trim();
-            const atas_nama   = document.getElementById('rek-nama').value.trim();
-            if (!bank && !no_rekening && !atas_nama) return null;
-            return { bank, no_rekening, atas_nama };
-        }
-
-        // Reset UI rekening ke mode default (dipakai saat buat invoice baru)
-        function resetRekeningUI() {
-            document.getElementById('rekening-mode').value = 'default';
-            document.getElementById('rekening-custom-fields').classList.add('hidden');
-            document.getElementById('rek-bank').value  = '';
-            document.getElementById('rek-norek').value = '';
-            document.getElementById('rek-nama').value   = '';
-        }
 
         window.onload = () => {
             document.getElementById('app-title').innerText = APP_CONFIG.ui.title;
@@ -431,9 +367,6 @@
 
             // Reset PPN toggle ke OFF
             setPPNToggle(false);
-
-            // Reset rekening ke mode default
-            resetRekeningUI();
             
             document.getElementById('items-container').innerHTML = '';
             addItem();
@@ -501,8 +434,8 @@
                 document.getElementById('ppn-display').classList.add('text-indigo-900');
             }
 
-            // Simpan ke hidden fields (x_07 = { items, rekening } -> rekening null jika pakai default)
-            document.getElementById('field_x07').value = JSON.stringify({ items, rekening: getRekeningData() });
+            // Simpan ke hidden fields
+            document.getElementById('field_x07').value = JSON.stringify(items);
             document.getElementById('field_x08').value = subtotal;
             document.getElementById('field_x09').value = ppn;
             document.getElementById('field_x10').value = total;
@@ -541,15 +474,8 @@
             document.getElementById('ppn-toggle').checked = hasPPN;
             
             document.getElementById('items-container').innerHTML = '';
-            let parsedX07 = [];
-            try { parsedX07 = JSON.parse(item.x_07 || '[]'); } catch (e) { parsedX07 = []; }
-
-            // Backward compatible: x_07 lama = array items langsung,
-            // x_07 baru = { items: [...], rekening: {...} | null }
-            const items    = Array.isArray(parsedX07) ? parsedX07 : (parsedX07.items || []);
-            const rekening = Array.isArray(parsedX07) ? null       : (parsedX07.rekening || null);
-
             try {
+                const items = JSON.parse(item.x_07 || '[]');
                 items.forEach(itm => {
                     const container = document.getElementById('items-container');
                     const div = document.createElement('div');
@@ -565,17 +491,6 @@
                     div.querySelectorAll('input').forEach(input => input.addEventListener('input', calculateTotal));
                 });
             } catch (e) { addItem(); }
-
-            // Pulihkan UI rekening: jika ada data custom -> mode custom, jika tidak -> mode default
-            if (rekening) {
-                document.getElementById('rekening-mode').value = 'custom';
-                document.getElementById('rekening-custom-fields').classList.remove('hidden');
-                document.getElementById('rek-bank').value  = rekening.bank || '';
-                document.getElementById('rek-norek').value = rekening.no_rekening || '';
-                document.getElementById('rek-nama').value   = rekening.atas_nama || '';
-            } else {
-                resetRekeningUI();
-            }
             
             calculateTotal();
             document.getElementById('modal-form').classList.remove('hidden');
