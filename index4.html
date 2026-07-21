@@ -116,14 +116,14 @@
                     <div class="space-y-4">
                         <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Metadata Invoice</label>
 
-                        <!-- No Invoice: format No100/02/INV/2026 (bisa diedit manual) -->
+                        <!-- No Invoice: format No100/02/INV/2026 -->
                         <div class="relative">
-                            <input type="text" name="x_04" id="field_x04" required
-                                   class="w-full p-3 bg-indigo-50 border border-indigo-100 font-black text-indigo-700 rounded-xl pr-10 outline-none focus:border-indigo-500 focus:bg-white" 
+                            <input type="text" name="x_04" id="field_x04" readonly 
+                                   class="w-full p-3 bg-indigo-50 border-none font-black text-indigo-700 rounded-xl pr-10" 
                                    placeholder="No Invoice">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 text-xs font-bold pointer-events-none">✏️</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 text-xs font-bold pointer-events-none">🔒</span>
                         </div>
-                        <p class="text-[9px] text-gray-400 font-bold -mt-2 ml-1 tracking-wider">Otomatis terisi, boleh diubah manual. Format: No[id+1+100]/[bln]/INV/[tahun]</p>
+                        <p class="text-[9px] text-gray-400 font-bold -mt-2 ml-1 tracking-wider">Format: No[id+1+100]/[bln]/INV/[tahun]</p>
 
                         <input type="date" name="x_05" id="field_x05" required 
                                class="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-indigo-500">
@@ -373,7 +373,6 @@
                         </td>
                         <td class="p-6">
                             <div class="text-sm font-black text-gray-700 uppercase">${item.x_01}</div>
-                            ${item.x_11 ? `<div class="text-[10px] text-gray-400 font-bold mt-1">${item.x_11}</div>` : ''}
                         </td>
                         <td class="p-6">
                             <div class="font-black text-lg text-indigo-600">Rp ${parseInt(item.x_10).toLocaleString('id-ID')}</div>
