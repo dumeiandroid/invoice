@@ -79,6 +79,7 @@
                         <tr class="text-[11px] uppercase font-black text-gray-400 tracking-wider">
                             <th class="p-6">Detail Invoice</th>
                             <th class="p-6">Kepada</th>
+                            <th class="p-6">Qty x Harga</th>
                             <th class="p-6">Nominal</th>
                             <th class="p-6">Status</th>
                             <th class="p-6 text-center">Aksi</th>
@@ -153,6 +154,7 @@
                         <select id="rekening-mode" onchange="toggleRekeningMode()" 
                                 class="text-xs font-bold border border-gray-200 rounded-lg p-2 bg-gray-50 outline-none">
                             <option value="default">Pakai Default (Permata)</option>
+                            <option value="personal">Pakai Default Personal</option>
                             <option value="custom">Custom / Edit Rekening</option>
                         </select>
                     </div>
@@ -256,6 +258,8 @@
 
         // Default Rekening (fallback jika tidak ada data custom)
         const DEFAULT_REKENING = { bank: 'PERMATA', no_rekening: '04124920006', atas_nama: 'PT Lidan Indah Abadi' };
+        // Default Rekening Personal (opsi kedua)
+        const PERSONAL_REKENING = { bank: 'PERMATA', no_rekening: '1231-5253-23', atas_nama: 'Dumei Heri Ginting ST' };
 
         // Tampilkan/sembunyikan field custom rekening sesuai pilihan mode
         function toggleRekeningMode() {
@@ -263,11 +267,11 @@
             const box  = document.getElementById('rekening-custom-fields');
             if (mode === 'custom') {
                 box.classList.remove('hidden');
-                // Prefill dengan default agar mudah diedit, hanya jika masih kosong
+                // Prefill dengan default personal agar mudah diedit, hanya jika masih kosong
                 if (!document.getElementById('rek-bank').value && !document.getElementById('rek-norek').value) {
-                    document.getElementById('rek-bank').value   = DEFAULT_REKENING.bank;
-                    document.getElementById('rek-norek').value  = DEFAULT_REKENING.no_rekening;
-                    document.getElementById('rek-nama').value   = DEFAULT_REKENING.atas_nama;
+                    document.getElementById('rek-bank').value   = PERSONAL_REKENING.bank;
+                    document.getElementById('rek-norek').value  = PERSONAL_REKENING.no_rekening;
+                    document.getElementById('rek-nama').value   = PERSONAL_REKENING.atas_nama;
                 }
             } else {
                 box.classList.add('hidden');
@@ -278,6 +282,7 @@
         // Ambil data rekening custom (null jika mode default -> invoice_hard akan fallback ke default)
         function getRekeningData() {
             const mode = document.getElementById('rekening-mode').value;
+            if (mode === 'personal') return PERSONAL_REKENING;
             if (mode !== 'custom') return null;
             const bank        = document.getElementById('rek-bank').value.trim();
             const no_rekening = document.getElementById('rek-norek').value.trim();
@@ -349,6 +354,21 @@
             return `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
 
+        // Ambil daftar item dari field x_07 (backward compatible: array langsung atau {items, rekening})
+        function getItemsFromX07(x07) {
+            let parsed = [];
+            try { parsed = JSON.parse(x07 || '[]'); } catch (e) { parsed = []; }
+            return Array.isArray(parsed) ? parsed : (parsed.items || []);
+        }
+
+        // Ambil data rekening dari field x_07, fallback ke rekening default jika tidak ada
+        function getRekeningFromX07(x07) {
+            let parsed = [];
+            try { parsed = JSON.parse(x07 || '[]'); } catch (e) { parsed = []; }
+            const rekening = Array.isArray(parsed) ? null : (parsed.rekening || null);
+            return rekening || DEFAULT_REKENING;
+        }
+
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -374,9 +394,15 @@
                         <td class="p-6">
                             <div class="text-sm font-black text-gray-700 uppercase">${item.x_01}</div>
                             ${item.x_11 ? `<div class="text-[10px] text-gray-400 font-bold mt-1">${item.x_11}</div>` : ''}
+                            ${(() => { const r = getRekeningFromX07(item.x_07); return `<div class="text-[10px] text-gray-400 font-bold mt-1 whitespace-nowrap">${r.bank} - ${r.no_rekening} a.n ${r.atas_nama}</div>`; })()}
                         </td>
                         <td class="p-6">
-                            <div class="font-black text-lg text-indigo-600">Rp ${parseInt(item.x_10).toLocaleString('id-ID')}</div>
+                            ${getItemsFromX07(item.x_07).map(itm => `
+                                <div class="text-[10px] text-gray-500 font-bold whitespace-nowrap">${itm.qty} x Rp ${parseInt(itm.price).toLocaleString('id-ID')}</div>
+                            `).join('')}
+                        </td>
+                        <td class="p-6">
+                            <div class="font-black text-xs text-indigo-600 whitespace-nowrap">Rp ${parseInt(item.x_10).toLocaleString('id-ID')}</div>
                         </td>
                         <td class="p-6">
                             <span class="${statusColor} px-3 py-1 rounded-lg text-[9px] font-black uppercase">${item.x_13}</span>
@@ -569,11 +595,19 @@
 
             // Pulihkan UI rekening: jika ada data custom -> mode custom, jika tidak -> mode default
             if (rekening) {
-                document.getElementById('rekening-mode').value = 'custom';
-                document.getElementById('rekening-custom-fields').classList.remove('hidden');
-                document.getElementById('rek-bank').value  = rekening.bank || '';
-                document.getElementById('rek-norek').value = rekening.no_rekening || '';
-                document.getElementById('rek-nama').value   = rekening.atas_nama || '';
+                const isPersonal = rekening.bank === PERSONAL_REKENING.bank &&
+                                    rekening.no_rekening === PERSONAL_REKENING.no_rekening &&
+                                    rekening.atas_nama === PERSONAL_REKENING.atas_nama;
+                if (isPersonal) {
+                    document.getElementById('rekening-mode').value = 'personal';
+                    document.getElementById('rekening-custom-fields').classList.add('hidden');
+                } else {
+                    document.getElementById('rekening-mode').value = 'custom';
+                    document.getElementById('rekening-custom-fields').classList.remove('hidden');
+                    document.getElementById('rek-bank').value  = rekening.bank || '';
+                    document.getElementById('rek-norek').value = rekening.no_rekening || '';
+                    document.getElementById('rek-nama').value   = rekening.atas_nama || '';
+                }
             } else {
                 resetRekeningUI();
             }
